@@ -1,18 +1,27 @@
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
-import L from "leaflet";
-import { useEffect, useState } from "react";
-import "leaflet/dist/leaflet.css";
-
-export default function CountryMap() {
-    const [countryData, setCountryData] = useState({
-        "type": "FeatureCollection", "features": [
-            {
-                "type": "Feature", "id": "CIV", "properties": { "name": "Ivory Coast" }, "geometry": {
-                    "type": "Polygon",
-                    "coordinates":
-                       [
+{
+    "type": "FeatureCollection",
+    "crs": {
+        "type": "name",
+        "properties": {
+            "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+        }
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "shapeName": "Côte d’Ivoire",
+                "shapeISO": "CIV",
+                "shapeID": "2848817B75463690839637",
+                "shapeGroup": "CIV",
+                "shapeType": "ADM0"
+            },
+            "geometry": {
+                "type": "MultiPolygon",
+                "coordinates": [
+                    [
                         [
-                           [
+                            [
                                 -7.98966263899996,
                                 10.161990662000051
                             ],
@@ -6321,83 +6330,101 @@ export default function CountryMap() {
                                 10.161990662000051
                             ]
                         ]
+                    ],
+                    [
+                        [
+                            [
+                                -3.115305141999954,
+                                5.107814845000064
+                            ],
+                            [
+                                -3.118316209999932,
+                                5.107001044000071
+                            ],
+                            [
+                                -3.131703253999945,
+                                5.108140368000022
+                            ],
+                            [
+                                -3.146351691999939,
+                                5.121568102000026
+                            ],
+                            [
+                                -3.155140753999945,
+                                5.127875067000048
+                            ],
+                            [
+                                -3.159087693999936,
+                                5.12555573100002
+                            ],
+                            [
+                                -3.163400845999945,
+                                5.125474351000037
+                            ],
+                            [
+                                -3.184966600999928,
+                                5.13226959800005
+                            ],
+                            [
+                                -3.193186001999948,
+                                5.136135158000059
+                            ],
+                            [
+                                -3.19595292899993,
+                                5.140204169000071
+                            ],
+                            [
+                                -3.197417772999927,
+                                5.145900782000069
+                            ],
+                            [
+                                -3.200306769999941,
+                                5.15180084800005
+                            ],
+                            [
+                                -3.207386847999942,
+                                5.156642970000064
+                            ],
+                            [
+                                -3.234120245999975,
+                                5.163478908000059
+                            ],
+                            [
+                                -3.253285286999926,
+                                5.149603583000044
+                            ],
+                            [
+                                -3.272328254999934,
+                                5.132391669000071
+                            ],
+                            [
+                                -3.276356574999966,
+                                5.118109442000048
+                            ],
+                            [
+                                -3.262074347999942,
+                                5.110988674000055
+                            ],
+                            [
+                                -3.163807745999975,
+                                5.101548570000034
+                            ],
+                            [
+                                -3.120228644999941,
+                                5.091498114000046
+                            ],
+                            [
+                                -3.119618292999974,
+                                5.091335354000023
+                            ],
+                            [
+                                -3.115305141999954,
+                                5.107814845000064
+                            ]
+                        ]
                     ]
-                }
+                ]
             }
-        ]
-    });
-
-    //   useEffect(() => {
-    //     // Charger la Côte d’Ivoire (CIV)
-    //     fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries/CIV.geo.json")
-    //       .then((res) => res.json())
-    //       .then((data) => setCountryData(data));
-    //   }, []);
-
-    // Style pour le pays
-    const countryStyle = {
-        // color: "#bec7c2ff", // vert
-        weight: 2,
-        // fillColor: "#051f05ff", // vert clair
-        fillOpacity: 0,
-    };
-
-    // Style pour le masque gris
-    const maskStyle = {
-        color: "#000000",
-        weight: 0,
-        fillColor: "rgba(243, 237, 237, 1)", // gris semi-transparent
-        fillOpacity: 1,
-    };
-
-    const createMask = (geojson) => {
-        // Création d’un grand polygone couvrant toute la Terre
-        const worldCoords = [
-            [
-                [-180, -90],
-                [-180, 90],
-                [180, 90],
-                [180, -90],
-                [-180, -90],
-            ],
-        ];
-
-        // On récupère les coordonnées du pays
-        const countryCoords = geojson.features[0].geometry.coordinates;
-
-        // On inverse le sens pour "faire un trou"
-        const mask = {
-            type: "Feature",
-            geometry: {
-                type: "Polygon",
-                coordinates: [...worldCoords, ...countryCoords],
-            },
-        };
-
-        return mask;
-    };
-
-    return (
-        <MapContainer
-            center={[7.54, -5.55]} // Côte d’Ivoire
-            zoom={6}
-            style={{ height: "100vh", width: "100%" }}
-            zoomControl={false}
-        >
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; OpenStreetMap contributors'
-            />
-
-            {countryData && (
-                <>
-                    {/* Masque gris autour du pays */}
-                    <GeoJSON data={createMask(countryData)} style={maskStyle} />
-
-                    {/* Pays bien visible par-dessus */}
-                    <GeoJSON data={countryData} style={countryStyle} />
-                </>
-            )}
-        </MapContainer>
-    );
+        }
+    ]
 }
