@@ -1,142 +1,112 @@
-import { MapContainer, TileLayer, GeoJSON, Popup, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import { useState } from "react";
-import countryData from "./civ.json"; // ton GeoJSON Côte d'Ivoire
-
-// 🔹 Composant pour effectuer le zoom dynamiquement
-function ZoomToFeature({ bounds }) {
-  const map = useMap();
-
-  if (bounds) {
-    map.fitBounds(bounds, { padding: [50, 50], animate: true });
-  }
-
-  return null;
-}
-
-export default function MapZoomOnClick() {
-  const [popupInfo, setPopupInfo] = useState(null);
-  const [bounds, setBounds] = useState(null);
-
-  const onEachFeature = (feature, layer) => {
-    layer.on({
-      click: (e) => {
-        const layerBounds = layer.getBounds(); // 🧭 Récupère les limites de la zone cliquée
-        setBounds(layerBounds);
-
-        setPopupInfo({
-          position: e.latlng,
-          name: feature.properties.name || "Zone inconnue",
-        });
-      },
-    });
-
-    // Optionnel : style de survol
-    layer.on({
-      mouseover: () => {
-        layer.setStyle({
-          fillColor: "#00bfa5",
-          fillOpacity: 0.6,
-          weight: 2,
-          color: "#004d40",
-        });
-      },
-      mouseout: () => {
-        layer.setStyle({
-          fillColor: "#009688",
-          fillOpacity: 0.4,
-          weight: 1,
-          color: "#00695c",
-        });
-      },
-    });
-  };
-
-  const countryStyle = {
-    fillColor: "#009688",
-    fillOpacity: 0.4,
-    color: "#004d40",
-    weight: 1.2,
-  };
-
-  return (
-    <MapContainer center={[7.5, -5.5]} zoom={6} style={{ height: "500px", width: "100%" }}>
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&copy; OpenStreetMap contributors"
-      />
-
-      <GeoJSON data={countryData} style={countryStyle} onEachFeature={onEachFeature} />
-
-      {popupInfo && (
-        <Popup position={popupInfo.position}>
-          <strong>{popupInfo.name}</strong><br />
-          📍 {popupInfo.position.lat.toFixed(3)}, {popupInfo.position.lng.toFixed(3)}
-        </Popup>
-      )}
-
-      <ZoomToFeature bounds={bounds} />
-    </MapContainer>
-  );
-}
-
-
-
-
-import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Popup, useMap } from "react-leaflet";
+import React, { useEffect, useState, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-function OfflinePopup({ isOffline }) {
+// Correction icônes par défaut Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
+});
+
+// Icônes personnalisées
+const onlineIcon = new L.Icon({
+  iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+  iconSize: [32, 32],
+});
+
+const offlineIcon = new L.Icon({
+  iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+  iconSize: [32, 32],
+});
+
+// Fonction pour ouvrir un popup automatiquement
+function PopupTrigger({ position, message }) {
   const map = useMap();
 
   useEffect(() => {
-    if (isOffline) {
-      // Affiche le popup au centre de la carte
-      const center = map.getCenter();
+    if (position) {
       const popup = L.popup()
-        .setLatLng(center)
-        .setContent(
-          "<b>⚠️ Hors ligne</b><br>Vous n'êtes plus connecté à Internet.<br>Certains éléments de la carte peuvent ne pas s'afficher."
-        )
+        .setLatLng(position)
+        .setContent(message)
         .openOn(map);
-
-      // Ferme le popup automatiquement après 5s (optionnel)
-      setTimeout(() => {
+      return () => {
         map.closePopup(popup);
-      }, 5000);
+      };
     }
-  }, [isOffline, map]);
+  }, [position, message, map]);
 
   return null;
 }
 
-export default function OfflineMapExample() {
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+const DabMonitoringMap = () => {
+  const [dabs, setDabs] = useState([
+    { id: 1, name: "DAB Plateau", position: [5.3265, -4.0127], status: "online" },
+    { id: 2, name: "DAB Yopougon", position: [5.3453, -4.0824], status: "online" },
+    { id: 3, name: "DAB Cocody", position: [5.3489, -3.9863], status: "online" },
+    { id: 4, name: "DAB Marcory", position: [5.3048, -3.9921], status: "online" },
+  ]);
 
-  // Détecte les changements de statut réseau
+  const [popupData, setPopupData] = useState(null); // DAB offline actuel
+
   useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
+    const interval = setInterval(() => {
+      setDabs((prev) =>
+        prev.map((dab) => {
+          const newStatus = Math.random() > 0.8 ? "offline" : "online"; // 20% chance offline
+          if (dab.status === "online" && newStatus === "offline") {
+            setPopupData({
+              position: dab.position,
+              message: `<b>${dab.name}</b><br/>🛑 DAB hors ligne !`,
+            });
+          }
+          return { ...dab, status: newStatus };
+        })
+      );
+    }, 7000); // toutes les 7 secondes
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <MapContainer center={[7.5, -5.5]} zoom={6} style={{ height: "500px", width: "100%" }}>
+    <MapContainer center={[5.34, -4.03]} zoom={12} style={{ height: "100vh", width: "100%" }}>
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="&copy; OpenStreetMap contributors"
       />
 
-      {/* Ce composant gère l'affichage du popup */}
-      <OfflinePopup isOffline={isOffline} />
+      {dabs.map((dab) => (
+        <Marker
+          key={dab.id}
+          position={dab.position}
+          icon={dab.status === "online" ? onlineIcon : offlineIcon}
+        >
+          <Popup>
+            <b>{dab.name}</b>
+            <br />
+            Statut :{" "}
+            <span
+              style={{
+                color: dab.status === "online" ? "green" : "red",
+                fontWeight: "bold",
+              }}
+            >
+              {dab.status.toUpperCase()}
+            </span>
+          </Popup>
+        </Marker>
+      ))}
+
+      {popupData && (
+        <PopupTrigger
+          position={popupData.position}
+          message={popupData.message}
+        />
+      )}
     </MapContainer>
   );
-}
+};
+
+export default DabMonitoringMap;

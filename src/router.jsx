@@ -4,6 +4,7 @@ import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import Map from "./Map";
 import CountryMap from "./CountryMask";
+import ReactLeafletPopup from "./ReactLeafletPopup";
 
 const router = createBrowserRouter([
   {
@@ -16,7 +17,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/mask",
-    element: <CountryMap />,
+    element: <ReactLeafletPopup />,
   },
 ]);
 
