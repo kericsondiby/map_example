@@ -1,16 +1,26 @@
 import { useState, useEffect } from "react";
 
-function QuorumBadge({ present = 7, total = 12, required = 7 }) {
+function QuorumBadge({
+  actions_presents = 750,
+  actions_inscrits = 1341,
+  total_actions_entreprise = 54435300,
+}) {
   const [tick, setTick] = useState(0);
   useEffect(() => { const t = setTimeout(() => setTick(1), 80); return () => clearTimeout(t); }, []);
 
+  // Quorum = 50% + 1 action des actions totales de l'entreprise
+  const required = Math.floor(total_actions_entreprise / 2) + 1;
+  const present = actions_presents;
+  const total = actions_inscrits;
+
   const reached = present >= required;
   const missing = Math.max(0, required - present);
+  const quorumPct = ((present / total_actions_entreprise) * 100).toFixed(4);
   const accent = reached ? "#4ade80" : "#fbbf24";
 
   const R = 11, sw = 2.5, size = 30, cx = 15, cy = 15;
   const circ = 2 * Math.PI * R;
-  const dash = circ * Math.min(tick ? present / required : 0, 1);
+  const dash = circ * Math.min(tick ? present / total_actions_entreprise * 2 : 0, 1);
   const tickAngle = -Math.PI / 2;
   const tx1 = cx + (R - 4) * Math.cos(tickAngle);
   const ty1 = cy + (R - 4) * Math.sin(tickAngle);
@@ -43,10 +53,10 @@ function QuorumBadge({ present = 7, total = 12, required = 7 }) {
 
       <span className="flex flex-col leading-none gap-0.5">
         <span className="font-mono text-xs tracking-tight text-white/90">
-          {present}<span className="text-white/25">/{total}</span>
+          {present.toLocaleString("fr-FR")}<span className="text-white/25"> / {total.toLocaleString("fr-FR")}</span>
         </span>
         <span className="text-[0.55rem] uppercase tracking-widest font-semibold" style={{ color: accent }}>
-          {reached ? "Quorum" : `−${missing} manquant${missing > 1 ? "s" : ""}`}
+          {reached ? "Quorum atteint" : `${quorumPct}% — quorum non atteint`}
         </span>
       </span>
 
@@ -64,7 +74,11 @@ function QuorumBadge({ present = 7, total = 12, required = 7 }) {
 export default function App() {
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-      <QuorumBadge present={7} total={12} required={7} />
+      <QuorumBadge
+        actions_presents={750}
+        actions_inscrits={1341}
+        total_actions_entreprise={54435300}
+      />
     </div>
   );
 }
