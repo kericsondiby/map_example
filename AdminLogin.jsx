@@ -1,136 +1,65 @@
 import { useState, useEffect } from "react";
-import {
-  CreditCard, Lock, Eye, EyeOff,
-  AlertCircle, ArrowRight
-} from "lucide-react";
+import { ShieldCheck, CreditCard, Lock, Eye, EyeOff, AlertCircle, ArrowRight } from "lucide-react";
 
 const STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@300;400;500&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #fff; overflow: hidden; }
 
-  @keyframes slideLeft  { from { opacity:0; transform:translateX(-40px) } to { opacity:1; transform:translateX(0) } }
-  @keyframes slideRight { from { opacity:0; transform:translateX(40px)  } to { opacity:1; transform:translateX(0) } }
-  @keyframes spin       { to { transform:rotate(360deg) } }
-  @keyframes shake      {
-    10%,90%  { transform:translateX(-2px) }
-    20%,80%  { transform:translateX(4px) }
-    30%,50%,70% { transform:translateX(-6px) }
-    40%,60%  { transform:translateX(6px) }
-    100%     { transform:translateX(0) }
-  }
-  @keyframes pulseRed {
-    0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,.45) }
-    50%     { box-shadow: 0 0 0 6px rgba(220,38,38,0) }
-  }
-  @keyframes floatY {
-    0%,100% { transform: translateY(0px) rotate(-6deg) }
-    50%     { transform: translateY(-14px) rotate(-6deg) }
-  }
-  @keyframes floatX {
-    0%,100% { transform: translateX(0px) rotate(12deg) }
-    50%     { transform: translateX(12px) rotate(12deg) }
-  }
-  @keyframes ticker {
-    from { transform: translateX(0) }
-    to   { transform: translateX(-50%) }
-  }
-  @keyframes ripple {
-    0%   { transform:scale(0); opacity:.4 }
-    100% { transform:scale(4); opacity:0 }
-  }
-  @keyframes dash {
-    from { stroke-dashoffset: 300 }
-    to   { stroke-dashoffset: 0 }
-  }
-  @keyframes fadeUp {
-    from { opacity:0; transform:translateY(10px) }
-    to   { opacity:1; transform:translateY(0) }
-  }
+  @keyframes slideUp   { from { opacity:0; transform:translateY(24px) } to { opacity:1; transform:translateY(0) } }
+  @keyframes fadeIn    { from { opacity:0 } to { opacity:1 } }
+  @keyframes shake     { 10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)} 30%,50%,70%{transform:translateX(-6px)} 40%,60%{transform:translateX(6px)} 100%{transform:translateX(0)} }
+  @keyframes spin      { to { transform: rotate(360deg) } }
+  @keyframes pulseRed  { 0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5)} 50%{box-shadow:0 0 0 6px rgba(220,38,38,0)} }
+  @keyframes ripple    { 0%{transform:scale(0);opacity:.4} 100%{transform:scale(4);opacity:0} }
 
-  .anim-left  { animation: slideLeft  .7s cubic-bezier(.16,1,.3,1) both }
-  .anim-right { animation: slideRight .7s cubic-bezier(.16,1,.3,1) both }
-  .anim-d1 { animation-delay:.05s }
-  .anim-d2 { animation-delay:.13s }
-  .anim-d3 { animation-delay:.21s }
-  .anim-d4 { animation-delay:.29s }
-  .anim-d5 { animation-delay:.37s }
+  .anim-1 { animation: slideUp .6s cubic-bezier(.16,1,.3,1) .05s both }
+  .anim-2 { animation: slideUp .6s cubic-bezier(.16,1,.3,1) .13s both }
+  .anim-3 { animation: slideUp .6s cubic-bezier(.16,1,.3,1) .21s both }
+  .anim-4 { animation: slideUp .6s cubic-bezier(.16,1,.3,1) .29s both }
+  .anim-5 { animation: slideUp .6s cubic-bezier(.16,1,.3,1) .37s both }
 
   .shake-it { animation: shake .45s cubic-bezier(.36,.07,.19,.97) }
-  .deco-a   { animation: floatY 5s ease-in-out infinite }
-  .deco-b   { animation: floatX 6.5s ease-in-out infinite }
 
-  .circle-path {
-    stroke-dasharray: 300;
-    animation: dash 1.8s cubic-bezier(.16,1,.3,1) .4s forwards;
-  }
+  .dot-pulse { animation: pulseRed 2s infinite }
 
-  /* Input */
   .inp {
     width: 100%;
     background: #fff;
     border: 1.5px solid #e5e7eb;
     border-radius: 10px;
     padding: 13px 48px 13px 46px;
-    font-family: 'DM Mono', monospace;
     font-size: 14px;
     color: #111;
     outline: none;
-    transition: border-color .2s, box-shadow .2s;
     letter-spacing: .03em;
+    transition: border-color .2s, box-shadow .2s;
   }
-  .inp::placeholder { color: #c4c4c4; }
-  .inp:focus {
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(220,38,38,.1);
-  }
-  .inp:disabled { opacity:.45; cursor:not-allowed; background:#fafafa; }
+  .inp::placeholder { color: #cbd5e1; }
+  .inp:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.1); }
+  .inp:disabled { opacity: .45; cursor: not-allowed; background: #fafafa; }
 
-  /* Button */
-  .btn-submit {
+  .btn {
     position: relative; overflow: hidden;
-    width: 100%; padding: 15px 24px;
-    background: #dc2626;
-    border: none; border-radius: 10px;
-    font-family: 'DM Mono', monospace;
+    width: 100%; padding: 14px 24px;
+    background: #dc2626; border: none; border-radius: 10px;
     font-size: 13px; font-weight: 500;
-    letter-spacing: .12em; text-transform: uppercase;
-    color: #fff; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
+    letter-spacing: .12em; text-transform: uppercase; color: #fff;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
     transition: background .2s, transform .15s, box-shadow .2s;
   }
-  .btn-submit:hover:not(:disabled) {
-    background: #b91c1c;
-    transform: translateY(-1px);
-    box-shadow: 0 10px 32px rgba(220,38,38,.35);
-  }
-  .btn-submit:active:not(:disabled) { transform: translateY(0); }
-  .btn-submit:disabled { opacity:.5; cursor:not-allowed; }
-  .btn-submit .ripple-el {
-    position: absolute;
-    background: rgba(255,255,255,.25);
-    border-radius: 50%;
-    width: 80px; height: 80px;
-    margin-top: -40px; margin-left: -40px;
-    animation: ripple .65s linear;
-    pointer-events: none;
+  .btn:hover:not(:disabled) { background:#b91c1c; transform:translateY(-1px); box-shadow:0 10px 32px rgba(220,38,38,.3); }
+  .btn:active:not(:disabled) { transform: translateY(0); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn .rpl {
+    position:absolute; background:rgba(255,255,255,.25); border-radius:50%;
+    width:80px; height:80px; margin-top:-40px; margin-left:-40px;
+    animation: ripple .65s linear; pointer-events:none;
   }
 
   .spinner {
     width:14px; height:14px;
-    border:2px solid rgba(255,255,255,.3);
-    border-top-color:#fff;
-    border-radius:50%;
-    animation:spin .7s linear infinite;
-  }
-
-  .ticker-wrap { overflow:hidden; white-space:nowrap; padding:9px 0; }
-  .ticker-inner {
-    display:inline-block;
-    animation: ticker 20s linear infinite;
-    font-family:'DM Mono',monospace;
-    font-size:10px; letter-spacing:.14em;
-    color:rgba(255,255,255,.28); text-transform:uppercase;
+    border:2px solid rgba(255,255,255,.3); border-top-color:#fff;
+    border-radius:50%; animation:spin .7s linear infinite;
   }
 `;
 
@@ -177,114 +106,120 @@ export default function AdminLogin() {
   return (
     <>
       <style>{STYLES}</style>
-      <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#fff", position:"relative" }}>
 
-          {/* subtle red glow */}
-          <div style={{ position:"absolute", top:"-10%", right:"-10%", width:500, height:500,
-            background:"radial-gradient(circle, rgba(220,38,38,.05) 0%, transparent 70%)",
-            pointerEvents:"none" }} />
-          <div style={{ position:"absolute", bottom:"-10%", left:"-10%", width:400, height:400,
-            background:"radial-gradient(circle, rgba(220,38,38,.04) 0%, transparent 70%)",
-            pointerEvents:"none" }} />
+      {/* Page */}
+      <div className="min-h-screen bg-white flex items-center justify-center px-4 relative overflow-hidden">
 
-          <div style={{ width:"100%", maxWidth:440, padding:"48px 40px" }}>
+        {/* Soft background glows */}
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none"
+             style={{ background: "radial-gradient(circle, rgba(220,38,38,.06) 0%, transparent 70%)", transform: "translate(30%, -30%)" }} />
+        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full pointer-events-none"
+             style={{ background: "radial-gradient(circle, rgba(220,38,38,.04) 0%, transparent 70%)", transform: "translate(-30%, 30%)" }} />
 
-            {/* Badge */}
-            <div className="anim-right anim-d1" style={{ opacity: mounted ? undefined : 0, marginBottom:36 }}>
-              <h1 style={{ fontFamily:"'Playfair Display',serif", fontSize:34, fontWeight:900,
-                color:"#111", letterSpacing:"-.02em", lineHeight:1.1 }}>
-                Connexion<br />
-                <span style={{ color:"#dc2626" }}>Administrateur</span>
-              </h1>
-              <p style={{ fontFamily:"'DM Mono',monospace", fontSize:12, color:"#9ca3af",
-                marginTop:10, letterSpacing:".03em", lineHeight:1.7 }}>
-                Identifiez-vous pour accéder au tableau de bord.
-              </p>
+        {/* Card */}
+        <div className={`relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 px-10 py-12 ${mounted ? "" : "opacity-0"}`}
+             style={{ transition: "opacity .4s" }}>
+
+          {/* Red top accent */}
+          <div className="absolute top-0 left-10 right-10 h-px bg-red-500 opacity-60 rounded-full" />
+
+          {/* ── Header ── */}
+          <div className={`mb-10 ${mounted ? "anim-1" : "opacity-0"}`}>
+
+            {/* Shield icon + badge row */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-11 h-11 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
+                <ShieldCheck size={20} className="text-red-600" />
+              </div>
+              <div className="inline-flex items-center gap-2 bg-red-50 border border-red-100 rounded-full px-3 py-1">
+                <span className="dot-pulse w-2 h-2 rounded-full bg-red-500 inline-block" />
+                <span className="text-red-600 uppercase tracking-widest" style={{ fontSize: 10 }}>
+                  Accès restreint
+                </span>
+              </div>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} autoComplete="off">
+            <h1 className="text-4xl font-black text-gray-900 leading-tight tracking-tight">
+              Connexion<br />
+              <span className="text-red-600">Administrateur</span>
+            </h1>
+            <p className="text-sm text-gray-400 mt-3 leading-relaxed tracking-wide">
+              Identifiez-vous pour accéder au tableau de bord.
+            </p>
+          </div>
 
-              {/* Matricule */}
-              <div className="anim-right anim-d2" style={{ opacity: mounted ? undefined : 0, marginBottom:16 }}>
-                <label style={{ display:"block", fontFamily:"'DM Mono',monospace",
-                  fontSize:10, letterSpacing:".16em", textTransform:"uppercase", marginBottom:8,
-                  color: focused==="mat" ? "#dc2626" : "#9ca3af", transition:"color .2s" }}>
-                  Matricule
-                </label>
-                <div style={{ position:"relative" }}>
-                  <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)",
-                    color: focused==="mat" ? "#dc2626" : "#d1d5db",
-                    transition:"color .2s", pointerEvents:"none", display:"flex", alignItems:"center" }}>
-                    <CreditCard size={16} />
-                  </span>
-                  <input className="inp" type="text" placeholder="EMP-000000"
-                    value={matricule} onChange={e => setMatricule(e.target.value)}
-                    onFocus={() => setFocused("mat")} onBlur={() => setFocused(null)}
-                    disabled={loading} />
-                </div>
+          {/* ── Form ── */}
+          <form onSubmit={handleSubmit} autoComplete="off">
+
+            {/* Matricule */}
+            <div className={`mb-4 ${mounted ? "anim-2" : "opacity-0"}`}>
+              <label className={`block text-xs uppercase tracking-widest mb-2 transition-colors duration-200 ${focused === "mat" ? "text-red-600" : "text-gray-400"}`}>
+                Matricule
+              </label>
+              <div className="relative">
+                <span className={`absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 flex items-center ${focused === "mat" ? "text-red-500" : "text-gray-300"}`}>
+                  <CreditCard size={16} />
+                </span>
+                <input className="inp" type="text" placeholder="EMP-000000"
+                  value={matricule} onChange={e => setMatricule(e.target.value)}
+                  onFocus={() => setFocused("mat")} onBlur={() => setFocused(null)}
+                  disabled={loading} />
               </div>
+            </div>
 
-              {/* Password */}
-              <div className="anim-right anim-d3" style={{ opacity: mounted ? undefined : 0, marginBottom:22 }}>
-                <label style={{ display:"block", fontFamily:"'DM Mono',monospace",
-                  fontSize:10, letterSpacing:".16em", textTransform:"uppercase", marginBottom:8,
-                  color: focused==="pwd" ? "#dc2626" : "#9ca3af", transition:"color .2s" }}>
-                  Mot de passe
-                </label>
-                <div style={{ position:"relative" }}>
-                  <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)",
-                    color: focused==="pwd" ? "#dc2626" : "#d1d5db",
-                    transition:"color .2s", pointerEvents:"none", display:"flex", alignItems:"center" }}>
-                    <Lock size={16} />
-                  </span>
-                  <input className="inp" type={showPass ? "text" : "password"}
-                    placeholder="••••••••••••" value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    onFocus={() => setFocused("pwd")} onBlur={() => setFocused(null)}
-                    disabled={loading} style={{ paddingRight:46 }} />
-                  <button type="button" onClick={() => setShowPass(!showPass)}
-                    style={{ position:"absolute", right:13, top:"50%", transform:"translateY(-50%)",
-                      background:"none", border:"none", cursor:"pointer",
-                      color:"#d1d5db", display:"flex", alignItems:"center", padding:4, transition:"color .2s" }}
-                    onMouseEnter={e => e.currentTarget.style.color="#dc2626"}
-                    onMouseLeave={e => e.currentTarget.style.color="#d1d5db"}>
-                    {showPass ? <EyeOff size={16}/> : <Eye size={16}/>}
-                  </button>
-                </div>
-              </div>
-
-              {/* Error */}
-              {error && (
-                <div style={{ display:"flex", alignItems:"center", gap:10,
-                  background:"#fef2f2", border:"1.5px solid #fecaca",
-                  borderRadius:10, padding:"12px 16px", marginBottom:18,
-                  fontFamily:"'DM Mono',monospace", fontSize:12, color:"#dc2626",
-                  letterSpacing:".02em", animation:"fadeUp .2s ease" }}>
-                  <AlertCircle size={14} color="#dc2626" style={{ flexShrink:0 }}/>
-                  {error}
-                </div>
-              )}
-
-              {/* Submit */}
-              <div className={`${shake ? "shake-it" : ""} anim-right anim-d4`}
-                   style={{ opacity: mounted ? undefined : 0 }}>
-                <button type="submit" className="btn-submit" disabled={loading}
-                  onClick={!loading ? addRipple : undefined}>
-                  {ripples.map(r => (
-                    <span key={r.id} className="ripple-el" style={{ left:r.x, top:r.y }} />
-                  ))}
-                  {loading
-                    ? <><div className="spinner"/>Vérification...</>
-                    : <><span>Se connecter</span><ArrowRight size={16}/></>}
+            {/* Password */}
+            <div className={`mb-6 ${mounted ? "anim-3" : "opacity-0"}`}>
+              <label className={`block text-xs uppercase tracking-widest mb-2 transition-colors duration-200 ${focused === "pwd" ? "text-red-600" : "text-gray-400"}`}>
+                Mot de passe
+              </label>
+              <div className="relative">
+                <span className={`absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 flex items-center ${focused === "pwd" ? "text-red-500" : "text-gray-300"}`}>
+                  <Lock size={16} />
+                </span>
+                <input className="inp" type={showPass ? "text" : "password"}
+                  placeholder="••••••••••••" value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  onFocus={() => setFocused("pwd")} onBlur={() => setFocused(null)}
+                  disabled={loading} style={{ paddingRight: 46 }} />
+                <button type="button" onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-300 hover:text-red-500 transition-colors duration-200 flex items-center"
+                  style={{ background: "none", border: "none", cursor: "pointer" }}>
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-            </form>
+            </div>
 
+            {/* Error */}
+            {error && (
+              <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5 text-red-600 text-xs tracking-wide">
+                <AlertCircle size={14} className="flex-shrink-0" />
+                {error}
+              </div>
+            )}
 
+            {/* Submit */}
+            <div className={`${shake ? "shake-it" : ""} ${mounted ? "anim-4" : "opacity-0"}`}>
+              <button type="submit" className="btn" disabled={loading}
+                onClick={!loading ? addRipple : undefined}>
+                {ripples.map(r => <span key={r.id} className="rpl" style={{ left: r.x, top: r.y }} />)}
+                {loading
+                  ? <><div className="spinner" />Vérification...</>
+                  : <><span>Se connecter</span><ArrowRight size={16} /></>}
+              </button>
+            </div>
+          </form>
 
+          {/* ── Footer ── */}
+          <div className={`mt-8 pt-6 border-t border-gray-100 flex items-center justify-between ${mounted ? "anim-5" : "opacity-0"}`}>
+            <div className="flex items-center gap-2 text-gray-300">
+              <ShieldCheck size={12} className="text-red-400 opacity-60" />
+              <span className="text-xs uppercase tracking-widest">Connexion chiffrée</span>
+            </div>
+            <span className="text-xs text-gray-200 uppercase tracking-widest">v2.4.1</span>
           </div>
+
         </div>
+      </div>
     </>
   );
 }
