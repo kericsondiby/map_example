@@ -1,166 +1,172 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, FC, ReactNode } from "react";
 
 /* ─────────────────────────────────────────────
-   DONNÉES
+   TYPES
 ───────────────────────────────────────────── */
-const PROJECTS = [
-  {
-    id: 1,
-    name: "Modernisation Complète de l'Infrastructure Digitale et Refonte UX",
-    status: "En cours",
-    type: "Développement",
-    start: "2026-01-10", end: "2026-04-30",
-    activeTasks: 8, totalTasks: 24, progress: 62,
-    owner: { name: "Konan Adjé", initials: "KA", gradient: "from-indigo-500 to-violet-500" },
-    members: [
-      { name: "Bamba Koné",       initials: "BK", role: "Dev Frontend",    gradient: "from-amber-400 to-red-500"     },
-      { name: "Fatoumata Diallo", initials: "FD", role: "Dev Backend",      gradient: "from-emerald-400 to-cyan-500"  },
-      { name: "Yves Méa",         initials: "YM", role: "UX Designer",      gradient: "from-blue-400 to-indigo-500"   },
-      { name: "Mariam Sylla",     initials: "MS", role: "QA Engineer",      gradient: "from-pink-400 to-rose-500"     },
-      { name: "Sékou Touré",      initials: "ST", role: "DevOps",           gradient: "from-orange-400 to-yellow-400" },
-      { name: "Awa Bah",          initials: "AB", role: "Dev Mobile",       gradient: "from-violet-500 to-pink-500"   },
-      { name: "N'Golo Kamara",    initials: "NK", role: "Analyste Données", gradient: "from-cyan-400 to-blue-500"     },
-      { name: "Aminata Lamine",   initials: "AL", role: "Scrum Master",     gradient: "from-green-500 to-emerald-400" },
-      { name: "Omar Diarra",      initials: "OD", role: "Architecte",       gradient: "from-red-500 to-orange-400"    },
-      { name: "Pathé Barry",      initials: "PB", role: "Dev Fullstack",    gradient: "from-slate-700 to-slate-500"   },
-      { name: "Issa Traoré",      initials: "IT", role: "Sécurité",         gradient: "from-violet-700 to-blue-500"   },
-    ],
-  },
-  {
-    id: 2,
-    name: "App Mobile CRM",
-    status: "Non démarré",
-    type: "Déploiement",
-    start: "2026-03-15", end: "2026-08-20",
-    activeTasks: 0, totalTasks: 18, progress: 0,
-    owner: { name: "Bamba Koné", initials: "BK", gradient: "from-amber-400 to-red-500" },
-    members: [
-      { name: "Yves Méa",     initials: "YM", role: "UX Designer",  gradient: "from-blue-400 to-indigo-500" },
-      { name: "Mariam Sylla", initials: "MS", role: "QA Engineer",  gradient: "from-pink-400 to-rose-500"   },
-      { name: "Pathé Barry",  initials: "PB", role: "Dev Fullstack", gradient: "from-slate-700 to-slate-500" },
-    ],
-  },
-  {
-    id: 3,
-    name: "Migration Base de Données PostgreSQL vers Cloud",
-    status: "Terminé",
-    type: "Architecture",
-    start: "2025-10-01", end: "2026-01-15",
-    activeTasks: 0, totalTasks: 12, progress: 100,
-    owner: { name: "Fatoumata Diallo", initials: "FD", gradient: "from-emerald-400 to-cyan-500" },
-    members: [
-      { name: "Sékou Touré",   initials: "ST", role: "DevOps",          gradient: "from-orange-400 to-yellow-400" },
-      { name: "Omar Diarra",   initials: "OD", role: "Architecte",      gradient: "from-red-500 to-orange-400"    },
-      { name: "Issa Traoré",   initials: "IT", role: "Sécurité",        gradient: "from-violet-700 to-blue-500"   },
-      { name: "N'Golo Kamara", initials: "NK", role: "Analyste Données",gradient: "from-cyan-400 to-blue-500"     },
-      { name: "Pathé Barry",   initials: "PB", role: "Dev Fullstack",   gradient: "from-slate-700 to-slate-500"   },
-    ],
-  },
-  {
-    id: 4,
-    name: "Tableau de Bord Analytics",
-    status: "En cours",
-    type: "Modélisation IA",
-    start: "2026-02-01", end: "2026-05-31",
-    activeTasks: 5, totalTasks: 16, progress: 38,
-    owner: { name: "Yves Méa", initials: "YM", gradient: "from-blue-400 to-indigo-500" },
-    members: [
-      { name: "Aminata Lamine",   initials: "AL", role: "Scrum Master",     gradient: "from-green-500 to-emerald-400" },
-      { name: "N'Golo Kamara",    initials: "NK", role: "Analyste Données", gradient: "from-cyan-400 to-blue-500"     },
-      { name: "Fatoumata Diallo", initials: "FD", role: "Dev Backend",      gradient: "from-emerald-400 to-cyan-500"  },
-    ],
-  },
-  {
-    id: 5,
-    name: "Intégration API Paiement",
-    status: "Suspendu",
-    type: "POC",
-    start: "2026-04-01", end: "2026-06-15",
-    activeTasks: 0, totalTasks: 9, progress: 15,
-    owner: { name: "Mariam Sylla", initials: "MS", gradient: "from-pink-400 to-rose-500" },
-    members: [
-      { name: "Bamba Koné",  initials: "BK", role: "Dev Frontend", gradient: "from-amber-400 to-red-500"   },
-      { name: "Pathé Barry", initials: "PB", role: "Dev Fullstack", gradient: "from-slate-700 to-slate-500" },
-    ],
-  },
-  {
-    id: 6,
-    name: "Audit Sécurité Système",
-    status: "Suspendu",
-    type: "Sécurité",
-    start: "2025-12-01", end: "2026-02-28",
-    activeTasks: 0, totalTasks: 7, progress: 20,
-    owner: { name: "Issa Traoré", initials: "IT", gradient: "from-violet-700 to-blue-500" },
-    members: [
-      { name: "Sékou Touré", initials: "ST", role: "DevOps",     gradient: "from-orange-400 to-yellow-400" },
-      { name: "Omar Diarra", initials: "OD", role: "Architecte", gradient: "from-red-500 to-orange-400"    },
-    ],
-  },
+export interface Collaborateur {
+  user_id: number;
+  user_name: string;
+  user_prenom: string;
+}
+
+export interface Projet {
+  projet_id: number;
+  nom_projet: string;
+  statut: "0" | "1" | "2" | "3";
+  type_projet: string;
+  date_debut: string;
+  date_fin: string;
+  description: string;
+  heure_total: string;
+  progession: string;
+  id_direction?: number;
+  fichiers?: unknown[];
+  po_projet: Collaborateur | null;
+  collaborateurs: Collaborateur[];
+}
+
+interface StatutConfig {
+  label: string;
+  badge: string;
+  bar: string;
+  text: string;
+  pulse: boolean;
+}
+
+interface TypeConfig {
+  label: string;
+  cls: string;
+  icon: string;
+}
+
+interface InfoItem {
+  label: string;
+  node: ReactNode;
+}
+
+/* ─────────────────────────────────────────────
+   MAPPING statut
+───────────────────────────────────────────── */
+const STATUT_MAP: Record<string, StatutConfig> = {
+  "0": { label: "Non démarré", badge: "bg-slate-400/[.15] text-slate-300 border border-slate-400/30",          bar: "from-slate-300 to-slate-200",   text: "text-slate-400",   pulse: false },
+  "1": { label: "En cours",    badge: "bg-blue-500/[.15] text-blue-300 border border-blue-400/30",             bar: "from-blue-600 to-blue-400",     text: "text-blue-600",    pulse: true  },
+  "2": { label: "Terminé",     badge: "bg-emerald-500/[.15] text-emerald-300 border border-emerald-400/30",    bar: "from-emerald-500 to-green-400", text: "text-emerald-600", pulse: false },
+  "3": { label: "Suspendu",    badge: "bg-orange-500/[.15] text-orange-300 border border-orange-400/30",       bar: "from-orange-500 to-amber-400",  text: "text-orange-500",  pulse: false },
+};
+
+/* ─────────────────────────────────────────────
+   MAPPING type_projet
+───────────────────────────────────────────── */
+const TYPE_MAP: Record<string, TypeConfig> = {
+  "1":  { label: "Pilotage",            cls: "bg-indigo-50 text-indigo-700 border-indigo-200",    icon: "🧭" },
+  "2":  { label: "Développement",       cls: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200", icon: "💻" },
+  "3":  { label: "Sécurité",            cls: "bg-red-50 text-red-700 border-red-200",             icon: "🔒" },
+  "4":  { label: "Architecture",        cls: "bg-violet-50 text-violet-700 border-violet-200",    icon: "🏗️" },
+  "5":  { label: "Documentation",       cls: "bg-sky-50 text-sky-700 border-sky-200",             icon: "📄" },
+  "6":  { label: "Modélisation IA",     cls: "bg-cyan-50 text-cyan-700 border-cyan-200",          icon: "🤖" },
+  "7":  { label: "Déploiement",         cls: "bg-orange-50 text-orange-700 border-orange-200",    icon: "🚀" },
+  "8":  { label: "Chantier",            cls: "bg-yellow-50 text-yellow-700 border-yellow-200",    icon: "🔧" },
+  "9":  { label: "POC",                 cls: "bg-lime-50 text-lime-700 border-lime-200",          icon: "🧪" },
+  "10": { label: "Run",                 cls: "bg-teal-50 text-teal-700 border-teal-200",          icon: "⚙️" },
+  "11": { label: "Management",          cls: "bg-blue-50 text-blue-700 border-blue-200",          icon: "👔" },
+  "12": { label: "Formation dispensée", cls: "bg-amber-50 text-amber-700 border-amber-200",       icon: "🎓" },
+  "13": { label: "Formation reçue",     cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: "📚" },
+  "14": { label: "Absence / Congés",    cls: "bg-rose-50 text-rose-700 border-rose-200",          icon: "🌴" },
+};
+
+/* ─────────────────────────────────────────────
+   COULEURS avatars
+───────────────────────────────────────────── */
+const GRADIENTS: string[] = [
+  "from-indigo-500 to-violet-500",
+  "from-amber-400 to-red-500",
+  "from-emerald-400 to-cyan-500",
+  "from-blue-400 to-indigo-500",
+  "from-pink-400 to-rose-500",
+  "from-orange-400 to-yellow-400",
+  "from-violet-500 to-pink-500",
+  "from-cyan-400 to-blue-500",
+  "from-green-500 to-emerald-400",
+  "from-red-500 to-orange-400",
+  "from-slate-600 to-slate-400",
+  "from-violet-700 to-blue-500",
 ];
 
-/* ─────────────────────────────────────────────
-   CONFIG STATUTS
-───────────────────────────────────────────── */
-const STATUS = {
-  "En cours":    { badge: "bg-blue-500/[.15] text-blue-300 border border-blue-400/30",          bar: "from-blue-600 to-blue-400",       text: "text-blue-600",    pulse: true  },
-  "Non démarré": { badge: "bg-slate-400/[.15] text-slate-300 border border-slate-400/30",       bar: "from-slate-300 to-slate-200",     text: "text-slate-400",   pulse: false },
-  "Terminé":     { badge: "bg-emerald-500/[.15] text-emerald-300 border border-emerald-400/30", bar: "from-emerald-500 to-green-400",   text: "text-emerald-600", pulse: false },
-  "Suspendu":    { badge: "bg-orange-500/[.15] text-orange-300 border border-orange-400/30",    bar: "from-orange-500 to-amber-400",    text: "text-orange-500",  pulse: false },
-};
-
-/* ─────────────────────────────────────────────
-   CONFIG TYPES
-───────────────────────────────────────────── */
-const TYPES = {
-  "Pilotage":            { cls: "bg-indigo-50 text-indigo-700 border-indigo-200",    icon: "🧭" },
-  "Développement":       { cls: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200", icon: "💻" },
-  "Sécurité":            { cls: "bg-red-50 text-red-700 border-red-200",             icon: "🔒" },
-  "Architecture":        { cls: "bg-violet-50 text-violet-700 border-violet-200",    icon: "🏗️" },
-  "Documentation":       { cls: "bg-sky-50 text-sky-700 border-sky-200",             icon: "📄" },
-  "Modélisation IA":     { cls: "bg-cyan-50 text-cyan-700 border-cyan-200",          icon: "🤖" },
-  "Déploiement":         { cls: "bg-orange-50 text-orange-700 border-orange-200",    icon: "🚀" },
-  "Chantier":            { cls: "bg-yellow-50 text-yellow-700 border-yellow-200",    icon: "🔧" },
-  "POC":                 { cls: "bg-lime-50 text-lime-700 border-lime-200",          icon: "🧪" },
-  "Run":                 { cls: "bg-teal-50 text-teal-700 border-teal-200",          icon: "⚙️" },
-  "Management":          { cls: "bg-blue-50 text-blue-700 border-blue-200",          icon: "👔" },
-  "Formation dispensée": { cls: "bg-amber-50 text-amber-700 border-amber-200",       icon: "🎓" },
-  "Formation reçue":     { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: "📚" },
-  "Absence / Congés":    { cls: "bg-rose-50 text-rose-700 border-rose-200",          icon: "🌴" },
-};
+const FALLBACK_STATUT: StatutConfig = STATUT_MAP["0"];
+const FALLBACK_TYPE: TypeConfig     = { label: "Autre", cls: "bg-slate-50 text-slate-600 border-slate-200", icon: "📁" };
+const VISIBLE = 5;
 
 /* ─────────────────────────────────────────────
    HELPERS
 ───────────────────────────────────────────── */
-function fmt(d) {
-  return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+function fmt(dateStr: string): string {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("fr-FR", {
+    day: "2-digit", month: "short", year: "numeric",
+  });
 }
 
-const VISIBLE = 5;
+function getInitials(user: Collaborateur): string {
+  return `${user.user_prenom?.[0] ?? ""}${user.user_name?.[0] ?? ""}`.toUpperCase();
+}
+
+function getFullName(user: Collaborateur): string {
+  return `${user.user_prenom} ${user.user_name}`;
+}
+
+function getGradient(userId: number): string {
+  return GRADIENTS[userId % GRADIENTS.length];
+}
+
+function clampProgress(val: string): number {
+  const n = parseFloat(val);
+  if (isNaN(n)) return 0;
+  return Math.min(100, Math.max(0, Math.round(n)));
+}
 
 /* ─────────────────────────────────────────────
-   SOUS-COMPOSANTS
+   AVATAR
 ───────────────────────────────────────────── */
-function Avatar({ initials, gradient, tooltip }) {
-  const [show, setShow] = useState(false);
+interface AvatarProps {
+  user: Collaborateur;
+}
+
+const Avatar: FC<AvatarProps> = ({ user }) => {
+  const [show, setShow] = useState<boolean>(false);
+  const grad = getGradient(user.user_id);
+
   return (
-    <div className="relative" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-      <div className={`w-8 h-8 bg-gradient-to-br ${gradient} rounded-full flex items-center justify-center font-bold text-white text-[10px] border-2 border-white cursor-default transition-transform duration-150 hover:-translate-y-1 flex-shrink-0`}>
-        {initials}
+    <div
+      className="relative"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <div className={`w-8 h-8 bg-gradient-to-br ${grad} rounded-full flex items-center justify-center font-bold text-white text-[10px] border-2 border-white cursor-default transition-transform duration-150 hover:-translate-y-1 flex-shrink-0`}>
+        {getInitials(user)}
       </div>
-      {show && tooltip && (
+      {show && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-0.5 bg-slate-800 text-white text-[9px] rounded whitespace-nowrap z-50 shadow-lg pointer-events-none">
-          {tooltip}
+          {getFullName(user)}
         </div>
       )}
     </div>
   );
+};
+
+/* ─────────────────────────────────────────────
+   PROGRESS BAR
+───────────────────────────────────────────── */
+interface ProgressBarProps {
+  rawValue: string;
+  statut: string;
 }
 
-function ProgressBar({ value, status }) {
-  const [width, setWidth] = useState(0);
-  const [count, setCount] = useState(0);
-  const done = useRef(false);
-  const cfg = STATUS[status];
+const ProgressBar: FC<ProgressBarProps> = ({ rawValue, statut }) => {
+  const value = clampProgress(rawValue);
+  const [width, setWidth] = useState<number>(0);
+  const [count, setCount] = useState<number>(0);
+  const done = useRef<boolean>(false);
+  const cfg  = STATUT_MAP[statut] ?? FALLBACK_STATUT;
 
   useEffect(() => {
     if (done.current) return;
@@ -168,7 +174,11 @@ function ProgressBar({ value, status }) {
     const t = setTimeout(() => {
       setWidth(value);
       let cur = 0;
-      const tick = () => { cur = Math.min(cur + 2, value); setCount(cur); if (cur < value) requestAnimationFrame(tick); };
+      const tick = (): void => {
+        cur = Math.min(cur + 2, value);
+        setCount(cur);
+        if (cur < value) requestAnimationFrame(tick);
+      };
       requestAnimationFrame(tick);
     }, 300);
     return () => clearTimeout(t);
@@ -178,7 +188,9 @@ function ProgressBar({ value, status }) {
     <div>
       <div className="flex justify-between items-center mb-1.5">
         <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest">Progression</span>
-        <span className={`text-base font-bold ${cfg.text}`} style={{ fontFamily: "'Syne',sans-serif" }}>{count}%</span>
+        <span className={`text-base font-bold ${cfg.text}`} style={{ fontFamily: "'Syne',sans-serif" }}>
+          {count}%
+        </span>
       </div>
       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
         <div
@@ -188,31 +200,62 @@ function ProgressBar({ value, status }) {
       </div>
     </div>
   );
-}
+};
 
 /* ─────────────────────────────────────────────
-   CARD
+   PROJECT CARD
 ───────────────────────────────────────────── */
-function ProjectCard({ project }) {
-  const [open, setOpen] = useState(false);
-  const cfg      = STATUS[project.status] ?? STATUS["Non démarré"];
-  const typeConf = TYPES[project.type]    ?? { cls: "bg-slate-50 text-slate-600 border-slate-200", icon: "📁" };
-  const overflow       = project.members.length - VISIBLE;
-  const visibleMembers = project.members.slice(0, VISIBLE);
+interface ProjectCardProps {
+  project: Projet;
+}
+
+const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
+  const [open, setOpen] = useState<boolean>(false);
+
+  const statCfg  = STATUT_MAP[project.statut]       ?? FALLBACK_STATUT;
+  const typeCfg  = TYPE_MAP[project.type_projet]     ?? FALLBACK_TYPE;
+  const members  = project.collaborateurs            ?? [];
+  const overflow = members.length - VISIBLE;
+  const visible  = members.slice(0, VISIBLE);
+
+  const infoItems: InfoItem[] = [
+    {
+      label: "Type",
+      node: (
+        <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border ${typeCfg.cls}`}>
+          {typeCfg.icon} {typeCfg.label}
+        </span>
+      ),
+    },
+    {
+      label: "Statut",
+      node: <span className={`text-[12px] font-semibold ${statCfg.text}`}>{statCfg.label}</span>,
+    },
+    {
+      label: "Début",
+      node: <span className="text-[12px] font-medium text-slate-700">{fmt(project.date_debut)}</span>,
+    },
+    {
+      label: "Fin",
+      node: <span className="text-[12px] font-medium text-slate-700">{fmt(project.date_fin)}</span>,
+    },
+  ];
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow duration-200">
 
       {/* ── HEADER ── */}
-      <div className="relative overflow-hidden px-5 pt-5 pb-4" style={{ background: "linear-gradient(135deg,#0f2951,#1a4a8a)" }}>
-        {/* déco */}
+      <div
+        className="relative overflow-hidden px-5 pt-5 pb-4"
+        style={{ background: "linear-gradient(135deg,#0f2951,#1a4a8a)" }}
+      >
         <div className="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none" />
         <div className="absolute right-8 -bottom-12 w-24 h-24 rounded-full bg-white/[.04] pointer-events-none" />
 
-        {/* Nom + badge statut */}
+        {/* Nom + statut */}
         <div className="relative z-10 flex items-start justify-between gap-2 min-w-0 mb-3">
           <h2
-            title={project.name}
+            title={project.nom_projet}
             className="font-extrabold text-white leading-snug min-w-0"
             style={{
               fontFamily: "'Syne',sans-serif",
@@ -224,38 +267,34 @@ function ProjectCard({ project }) {
               wordBreak: "break-word",
             }}
           >
-            {project.name}
+            {project.nom_projet}
           </h2>
-          <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium ${cfg.badge}`}>
-            <span className={`w-1.5 h-1.5 rounded-full bg-current flex-shrink-0 ${cfg.pulse ? "animate-pulse" : ""}`} />
-            {project.status}
+          <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium ${statCfg.badge}`}>
+            <span className={`w-1.5 h-1.5 rounded-full bg-current flex-shrink-0 ${statCfg.pulse ? "animate-pulse" : ""}`} />
+            {statCfg.label}
           </span>
         </div>
 
-        {/* Date */}
+        {/* Dates */}
         <div className="relative z-10 inline-flex items-center gap-1.5 text-white/50 text-[10px] bg-white/10 px-2 py-0.5 rounded-md">
           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
           </svg>
-          {fmt(project.start)} → {fmt(project.end)}
+          {fmt(project.date_debut)} → {fmt(project.date_fin)}
         </div>
       </div>
 
       <div className="flex flex-col flex-1 px-5 py-4 gap-3">
 
         {/* ── PROGRESSION ── */}
-        <ProgressBar value={project.progress} status={project.status} />
+        <ProgressBar rawValue={project.progession} statut={project.statut} />
 
-        {/* Tâches */}
+        {/* Heures */}
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-medium bg-blue-50 text-blue-600 px-2 py-0.5 rounded">
-            🔵 {project.activeTasks} actives
-          </span>
-          <span className="text-slate-200 text-xs">/</span>
-          <span className="text-[10px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded">
-            {project.totalTasks} tâches totales
+            ⏱ {project.heure_total}h estimées
           </span>
         </div>
 
@@ -263,34 +302,13 @@ function ProjectCard({ project }) {
 
         {/* ── INFOS ── */}
         <div className="grid grid-cols-2 gap-0">
-          {[
-            {
-              label: "Type",
-              node: (
-                <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border ${typeConf.cls}`}>
-                  {typeConf.icon} {project.type}
-                </span>
-              ),
-            },
-            {
-              label: "Statut",
-              node: <span className={`text-[12px] font-semibold ${cfg.text}`}>{project.status}</span>,
-            },
-            {
-              label: "Début",
-              node: <span className="text-[12px] font-medium text-slate-700">{fmt(project.start)}</span>,
-            },
-            {
-              label: "Fin",
-              node: <span className="text-[12px] font-medium text-slate-700">{fmt(project.end)}</span>,
-            },
-          ].map((item, i, arr) => (
+          {infoItems.map((item, i) => (
             <div
               key={item.label}
               className={[
                 "py-2.5",
                 i % 2 === 0 ? "pr-3 border-r border-slate-100" : "pl-3",
-                i < arr.length - 2 ? "border-b border-slate-100" : "",
+                i < infoItems.length - 2 ? "border-b border-slate-100" : "",
               ].join(" ")}
             >
               <p className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
@@ -302,15 +320,17 @@ function ProjectCard({ project }) {
         <div className="h-px bg-slate-100" />
 
         {/* ── PRODUCT OWNER ── */}
-        <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${project.owner.gradient} flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`}>
-            {project.owner.initials}
+        {project.po_projet && (
+          <div className="flex items-center gap-2">
+            <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getGradient(project.po_projet.user_id)} flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`}>
+              {getInitials(project.po_projet)}
+            </div>
+            <div>
+              <p className="text-[9px] text-slate-400 uppercase tracking-widest">Product Owner</p>
+              <p className="text-[11px] font-medium text-slate-700 leading-tight">{getFullName(project.po_projet)}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[9px] text-slate-400 uppercase tracking-widest">Product Owner</p>
-            <p className="text-[11px] font-medium text-slate-700 leading-tight">{project.owner.name}</p>
-          </div>
-        </div>
+        )}
 
         <div className="h-px bg-slate-100" />
 
@@ -318,16 +338,19 @@ function ProjectCard({ project }) {
         <div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest">
-              Équipe · {project.members.length} membres
+              Équipe · {members.length} membre{members.length > 1 ? "s" : ""}
             </span>
-            {project.members.length > VISIBLE && (
+            {members.length > VISIBLE && (
               <button
-                onClick={() => setOpen(o => !o)}
+                onClick={() => setOpen((o) => !o)}
                 className="flex items-center gap-0.5 text-[10px] text-blue-600 hover:text-blue-500 transition-colors"
               >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                  className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
-                  <polyline points="6 9 12 15 18 9"/>
+                <svg
+                  width="10" height="10" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" strokeWidth="2.5"
+                  className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                >
+                  <polyline points="6 9 12 15 18 9" />
                 </svg>
                 {open ? "Réduire" : "Voir tous"}
               </button>
@@ -336,9 +359,9 @@ function ProjectCard({ project }) {
 
           {/* Avatars empilés */}
           <div className="flex items-center">
-            {visibleMembers.map((m, i) => (
-              <div key={m.name} className="-ml-2.5 first:ml-0" style={{ zIndex: VISIBLE - i }}>
-                <Avatar initials={m.initials} gradient={m.gradient} tooltip={m.name} />
+            {visible.map((m, i) => (
+              <div key={m.user_id} className="-ml-2.5 first:ml-0" style={{ zIndex: VISIBLE - i }}>
+                <Avatar user={m} />
               </div>
             ))}
             {overflow > 0 && (
@@ -350,16 +373,19 @@ function ProjectCard({ project }) {
 
           {/* Liste dépliable */}
           {open && (
-            <div className="mt-2.5 flex flex-col gap-1.5 max-h-44 overflow-y-auto pr-0.5" style={{ scrollbarWidth: "thin" }}>
-              {project.members.map(m => (
-                <div key={m.name} className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors">
-                  <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${m.gradient} flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0`}>
-                    {m.initials}
+            <div
+              className="mt-2.5 flex flex-col gap-1.5 max-h-44 overflow-y-auto pr-0.5"
+              style={{ scrollbarWidth: "thin" }}
+            >
+              {members.map((m) => (
+                <div
+                  key={m.user_id}
+                  className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100 transition-colors"
+                >
+                  <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${getGradient(m.user_id)} flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0`}>
+                    {getInitials(m)}
                   </div>
-                  <div>
-                    <p className="text-[11px] font-medium text-slate-700 leading-tight">{m.name}</p>
-                    <p className="text-[9px] text-slate-400">{m.role}</p>
-                  </div>
+                  <p className="text-[11px] font-medium text-slate-700 leading-tight">{getFullName(m)}</p>
                 </div>
               ))}
             </div>
@@ -369,30 +395,40 @@ function ProjectCard({ project }) {
       </div>
     </div>
   );
-}
+};
 
 /* ─────────────────────────────────────────────
    GRILLE — 3 par ligne
 ───────────────────────────────────────────── */
-export default function ProjectGrid() {
+interface ProjectGridProps {
+  projects: Projet[];
+}
+
+const ProjectGrid: FC<ProjectGridProps> = ({ projects }) => {
   return (
     <div className="min-h-screen bg-slate-100 p-8" style={{ fontFamily: "'DM Sans',sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');`}</style>
 
-      {/* Header page */}
       <div className="mb-8">
         <p className="text-[10px] font-medium text-blue-600 uppercase tracking-[.3em] mb-1">◈ Gestion de Projets</p>
-        <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight" style={{ fontFamily: "'Syne',sans-serif" }}>
+        <h1
+          className="text-3xl font-extrabold text-slate-800 tracking-tight"
+          style={{ fontFamily: "'Syne',sans-serif" }}
+        >
           Mes Projets
         </h1>
         <div className="h-0.5 w-12 bg-gradient-to-r from-blue-600 to-transparent mt-2" />
-        <p className="text-sm text-slate-400 mt-1">{PROJECTS.length} projets au total</p>
+        <p className="text-sm text-slate-400 mt-1">{projects.length} projets au total</p>
       </div>
 
-      {/* Grille 3 colonnes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {PROJECTS.map(p => <ProjectCard key={p.id} project={p} />)}
+        {projects.map((p) => (
+          <ProjectCard key={p.projet_id} project={p} />
+        ))}
       </div>
     </div>
   );
-}
+};
+
+export { ProjectCard, ProjectGrid };
+export default ProjectGrid;
